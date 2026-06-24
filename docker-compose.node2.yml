@@ -4,7 +4,7 @@ services:
   cv_service:
     build:
       context: ./services/cv_service
-      dockerfile: ../../members/member3_devops/docker_configs/Dockerfile.cv
+      dockerfile: Dockerfile
     container_name: ddm501-cv-service
     ports:
       - "8001:8001"

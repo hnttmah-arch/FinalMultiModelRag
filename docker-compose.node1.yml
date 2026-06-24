@@ -4,10 +4,10 @@ services:
   gateway:
     build:
       context: ./services/gateway
-      dockerfile: ../../members/member3_devops/docker_configs/Dockerfile.gateway
+      dockerfile: Dockerfile
     container_name: ddm501-gateway
     ports:
-      - "8000:8000"
+      - "8080:8000"
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/key.json
       # Điền IP mạng LAN của máy Node 2 (Ví dụ: 192.168.1.100)
@@ -33,7 +33,7 @@ services:
   frontend:
     build:
       context: ./services/frontend
-      dockerfile: ../../members/member3_devops/docker_configs/Dockerfile.frontend
+      dockerfile: Dockerfile
     container_name: ddm501-frontend
     ports:
       - "8501:8501"
@@ -73,6 +73,19 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+
+  rag_service:
+    build:
+      context: ./services/rag_service
+      dockerfile: Dockerfile
+    container_name: ddm501-rag-service
+    profiles:
+      - ingest
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - chromadb
 
 volumes:
   chroma-data:
