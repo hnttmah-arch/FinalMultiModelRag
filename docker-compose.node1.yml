@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: ../../members/member3_devops/docker_configs/Dockerfile.gateway
+    container_name: ddm501-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/key.json
+      # Điền IP mạng LAN của máy Node 2 (Ví dụ: 192.168.1.100)
+      - CV_SERVICE_URL=http://192.168.1.100:8001/predict
+      - OLLAMA_URL=http://192.168.1.100:11434/api/generate
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      # Biến môi trường bật/tắt Mock dữ liệu để test nhanh offline:
+      # Khi bắt đầu test tích hợp thật, hãy chuyển tất cả sang 'false'
+      - MOCK_STT=true
+      - MOCK_CV=true
+      - MOCK_RAG=true
+      - MOCK_VLM=true
+    volumes:
+      # Mount thư mục chứa sơ đồ hướng dẫn sử dụng
+      - ./services/gateway/static:/app/static
+      # Nếu có key Google Cloud STT thật, bỏ comment dòng dưới để mount vào container
+      # - ./services/gateway/key.json:/app/key.json
+    depends_on:
+      - chromadb
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: ../../members/member3_devops/docker_configs/Dockerfile.frontend
+    container_name: ddm501-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma:0.4.15
+    container_name: ddm501-chromadb
+    ports:
+      - "8002:8000" # Expose ra port 8002 trên host để tránh trùng port 8000 của gateway
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ddm501-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ddm501-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Tài khoản: admin / Mật khẩu: admin
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  chroma-data:

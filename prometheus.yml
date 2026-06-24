@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s # Tần suất scrape metric nhanh (5 giây) để xem realtime trên Grafana khi test
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Thu thập metrics từ API Gateway
+  - job_name: 'api-gateway'
+    static_configs:
+      # 'gateway:8000' vì trong docker-compose Node 1, service gateway được đặt tên là gateway và chạy port 8000
+      - targets: ['gateway:8000']

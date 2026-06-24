@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  cv_service:
+    build:
+      context: ./services/cv_service
+      dockerfile: ../../members/member3_devops/docker_configs/Dockerfile.cv
+    container_name: ddm501-cv-service
+    ports:
+      - "8001:8001"
+    environment:
+      # Định nghĩa biến môi trường MLflow chạy ở Node 1 nếu cần lưu log training
+      - MLFLOW_TRACKING_URI=http://192.168.1.50:5000 # Thay thế bằng IP thực tế của Node 1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu] # Cho phép container sử dụng GPU NVIDIA RTX 5080 trên Windows Host
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ddm501-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu] # Cho phép Ollama sử dụng GPU phục vụ suy luận VLM nhanh
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
