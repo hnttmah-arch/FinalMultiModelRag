@@ -56,7 +56,8 @@ jobs:
     - name: Build Docker Images (Dry Run / Verify Build)
       run: |
         # Build thử nghiệm để đảm bảo các Dockerfile viết đúng
-        docker build -t ddm501-frontend:latest -f members/member3_devops/docker_configs/Dockerfile.frontend services/frontend
-        docker build -t ddm501-gateway:latest -f members/member3_devops/docker_configs/Dockerfile.gateway services/gateway
-        docker build -t ddm501-cv-service:latest -f members/member3_devops/docker_configs/Dockerfile.cv services/cv_service
+        docker build -t ddm501-frontend:latest -f services/frontend/Dockerfile services/frontend
+        docker build -t ddm501-gateway:latest -f services/gateway/Dockerfile services/gateway
+        docker build -t ddm501-cv-service:latest -f services/cv_service/Dockerfile services/cv_service
+        docker build -t ddm501-rag-service:latest -f services/rag_service/Dockerfile services/rag_service
         echo "Build Docker Image thành công!"
