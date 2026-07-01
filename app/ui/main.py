@@ -235,6 +235,13 @@ st.markdown("""
 def validate_inputs(img_file, text_val, audio_val):
     if not img_file:
         return False, "Vui lòng tải lên Hình ảnh xe để nhận diện."
+        
+    # Thêm check định dạng file
+    valid_extensions = ['png', 'jpg', 'jpeg']
+    file_ext = img_file.name.split('.')[-1].lower()
+    if file_ext not in valid_extensions:
+        return False, f"Định dạng file .{file_ext} không được hỗ trợ. Vui lòng dùng PNG, JPG hoặc JPEG."
+        
     if img_file.size > 5 * 1024 * 1024:
         return False, f"File ảnh tải lên quá lớn ({img_file.size / (1024*1024):.1f} MB)."
     if not text_val and not audio_val:

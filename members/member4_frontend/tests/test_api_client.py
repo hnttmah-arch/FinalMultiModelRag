@@ -45,3 +45,19 @@ def test_process_request_timeout(mock_post):
     res = process_request(image_data=DummyFile(), text_query="Lỗi")
     assert res["status"] == 504
     assert "Timeout" in res["error"]
+
+@patch('app.ui.api_client.requests.post')
+def test_process_request_connection_error(mock_post):
+    from app.ui.api_client import process_request
+    
+    # Simulate completely down server (ConnectionError)
+    mock_post.side_effect = requests.exceptions.ConnectionError("Connection refused")
+    
+    class DummyFile:
+        name = "test.png"
+        type = "image/png"
+        def getvalue(self): return b"dummy"
+        
+    res = process_request(image_data=DummyFile(), text_query="Lỗi")
+    assert res["status"] == 500
+    assert "Lỗi kết nối mạng" in res["error"]

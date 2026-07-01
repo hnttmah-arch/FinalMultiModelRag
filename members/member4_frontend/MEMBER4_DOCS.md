@@ -19,10 +19,27 @@ Nơi chứa toàn bộ mã nguồn của Frontend.
 - **`api_client.py`**: Chứa logic đóng gói Request (Ảnh, Text, Voice) và gửi tới API Gateway (FastAPI) thông qua thư viện `requests`. File này hoạt động độc lập để tách biệt logic xử lý data và giao diện.
 
 ### 📁 `tests/` (Kiểm thử Pytest)
-Nơi chứa các kịch bản kiểm thử tự động, hiện tại đã Pass 100%.
-- **`test_validation.py`** (Unit Test): Kiểm tra các ràng buộc độc lập. Ví dụ: Chặn người dùng nếu upload ảnh có kích thước vượt quá 5MB.
-- **`test_api_client.py`** (Unit Test): Mock (giả lập) các API gọi đến Gateway để kiểm tra xem UI có xử lý đúng phản hồi (Response JSON) từ backend không.
-- **`test_integration.py`** (Integration Test): Sử dụng thư viện `TestClient` để tạo luồng test tích hợp, đảm bảo từ UI gọi qua Gateway hoạt động liền mạch mà không bị lỗi.
+Nơi chứa các kịch bản kiểm thử tự động, hiện tại cả 9/9 kịch bản đều đã **Pass 100%**.
+
+**1. `test_validation.py` (Unit Test - 5 kịch bản):**
+Kiểm tra logic chặn lỗi người dùng tại màn hình (Frontend):
+- `test_validate_inputs_missing_image`: Chặn và báo lỗi nếu người dùng bấm truy vấn mà chưa tải ảnh lên.
+- `test_validate_inputs_size_exceeded`: Chặn và báo lỗi nếu ảnh tải lên có kích thước vượt quá giới hạn 5MB.
+- `test_validate_inputs_invalid_extension`: Chặn và báo lỗi nếu ảnh tải lên sai định dạng (Ví dụ: tải lên file PDF thay vì PNG/JPG).
+- `test_validate_inputs_missing_query`: Chặn và báo lỗi nếu người dùng không nhập câu hỏi bằng Văn bản hoặc Giọng nói.
+- `test_validate_inputs_success`: Xác nhận dữ liệu hợp lệ và cho phép hệ thống tiến hành gửi đi.
+
+**2. `test_integration.py` (Integration Test - 3 kịch bản):**
+Kiểm tra khả năng kết nối và giao tiếp giữa trang web (UI) với Backend (API Gateway) bằng `TestClient`:
+- `test_integration_missing_image`: Đảm bảo API Gateway sẽ trả về mã lỗi 400 (Bad Request) nếu phát hiện luồng gọi không đính kèm file ảnh.
+- `test_integration_missing_query`: Đảm bảo API Gateway báo lỗi 400 nếu luồng gọi thiếu đi câu hỏi truy vấn.
+- `test_integration_success`: Đảm bảo luồng kết nối tích hợp thành công, Gateway phản hồi đúng mã 200 OK cùng cấu trúc dữ liệu JSON.
+
+**3. `test_api_client.py` (Unit Test - 3 kịch bản):**
+Kiểm tra chức năng đóng gói dữ liệu và gọi ra ngoài Internet (qua thư viện `requests`):
+- `test_process_request_success`: Giả lập phản hồi 200 OK từ Backend xem hàm Client có xử lý mượt mà không.
+- `test_process_request_timeout`: Giả lập tình huống máy chủ AI bị treo lâu (Lỗi 504 Timeout).
+- `test_process_request_connection_error`: Giả lập tình huống máy chủ Gateway sập hoàn toàn (Mất kết nối mạng - Connection Refused) để xem hệ thống bắt lỗi chuẩn xác chưa.
 
 ### 📁 `monitoring_configs/` (Cấu hình MLOps)
 Nơi chứa các cấu hình cho hệ thống Monitoring, được gọi vào bởi Docker Compose.

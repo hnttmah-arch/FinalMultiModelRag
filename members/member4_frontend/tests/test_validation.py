@@ -2,8 +2,9 @@ import pytest
 
 # Dummy class để giả lập UploadedFile của Streamlit
 class DummyUploadedFile:
-    def __init__(self, size_bytes):
+    def __init__(self, size_bytes, name="test.jpg"):
         self.size = size_bytes
+        self.name = name
 
 def test_validate_inputs_missing_image():
     from app.ui.main import validate_inputs
@@ -13,10 +14,17 @@ def test_validate_inputs_missing_image():
 
 def test_validate_inputs_size_exceeded():
     from app.ui.main import validate_inputs
-    large_file = DummyUploadedFile(6 * 1024 * 1024) # 6MB
+    large_file = DummyUploadedFile(6 * 1024 * 1024, "image.jpg") # 6MB
     is_valid, msg = validate_inputs(large_file, "lỗi", None)
     assert is_valid is False
     assert "quá lớn" in msg
+
+def test_validate_inputs_invalid_extension():
+    from app.ui.main import validate_inputs
+    invalid_file = DummyUploadedFile(2 * 1024 * 1024, "document.pdf")
+    is_valid, msg = validate_inputs(invalid_file, "lỗi", None)
+    assert is_valid is False
+    assert "không được hỗ trợ" in msg
 
 def test_validate_inputs_missing_query():
     from app.ui.main import validate_inputs
